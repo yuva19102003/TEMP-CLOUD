@@ -19,7 +19,7 @@ export interface RecordingMetadata {
   hostName: string
 }
 
-class VideoRecorderService {
+export class VideoRecorderService {
   private mediaRecorder: MediaRecorder | null = null
   private recordedChunks: Blob[] = []
   private isRecording = false

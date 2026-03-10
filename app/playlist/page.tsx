@@ -14,12 +14,12 @@ import {
   CalendarIcon,
   TrashIcon,
   ShareIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   VideoCameraIcon,
   MagnifyingGlassIcon,
   FunnelIcon
 } from '@heroicons/react/24/outline'
-import { videoRecorder, RecordingMetadata } from '@/lib/video-recorder'
+import videoRecorder, { RecordingMetadata, VideoRecorderService } from '@/lib/video-recorder'
 
 export default function PlaylistPage() {
   const [recordings, setRecordings] = useState<RecordingMetadata[]>([])
@@ -39,10 +39,40 @@ export default function PlaylistPage() {
     setIsLoading(true)
     try {
       const data = await videoRecorder.getRecordings()
-      setRecordings(data)
+      
+      // If no recordings found, add some demo data for development
+      if (data.length === 0 && process.env.NODE_ENV === 'development') {
+        const demoRecordings: RecordingMetadata[] = [
+          {
+            id: 'demo-1',
+            roomId: 'DEMO1234',
+            title: 'Demo Screen Recording - Welcome Stream',
+            duration: 180, // 3 minutes
+            fileSize: 15728640, // 15MB
+            thumbnailUrl: undefined,
+            createdAt: new Date(Date.now() - 86400000), // 1 day ago
+            hostName: 'Demo User'
+          },
+          {
+            id: 'demo-2',
+            roomId: 'LIVE5678',
+            title: 'Camera + Screen Recording - Tutorial',
+            duration: 420, // 7 minutes
+            fileSize: 31457280, // 30MB
+            thumbnailUrl: undefined,
+            createdAt: new Date(Date.now() - 172800000), // 2 days ago
+            hostName: 'Tutorial Host'
+          }
+        ]
+        setRecordings(demoRecordings)
+      } else {
+        setRecordings(data)
+      }
     } catch (error) {
       console.error('Failed to load recordings:', error)
       toast.error('Failed to load recordings')
+      // Set empty array as fallback
+      setRecordings([])
     } finally {
       setIsLoading(false)
     }
@@ -85,8 +115,13 @@ export default function PlaylistPage() {
     })
 
   const handlePlayRecording = (recording: RecordingMetadata) => {
-    setSelectedRecording(recording)
-    setIsPlaying(true)
+    try {
+      setSelectedRecording(recording)
+      setIsPlaying(true)
+    } catch (error) {
+      console.error('Error playing recording:', error)
+      toast.error('Failed to play recording')
+    }
   }
 
   const handleDeleteRecording = async (recordingId: string) => {
@@ -111,9 +146,14 @@ export default function PlaylistPage() {
   }
 
   const shareRecording = (recording: RecordingMetadata) => {
-    const shareUrl = `${window.location.origin}/playlist?play=${recording.id}`
-    navigator.clipboard.writeText(shareUrl)
-    toast.success('🔗 Recording link copied to clipboard!')
+    try {
+      const shareUrl = `${window.location.origin}/playlist?play=${recording.id}`
+      navigator.clipboard.writeText(shareUrl)
+      toast.success('🔗 Recording link copied to clipboard!')
+    } catch (error) {
+      console.error('Error sharing recording:', error)
+      toast.error('Failed to copy link')
+    }
   }
 
   const formatDate = (date: Date) => {
@@ -167,7 +207,7 @@ export default function PlaylistPage() {
               {selectedRecording ? (
                 <div className="aspect-video bg-black relative">
                   <ReactPlayer
-                    url={`/api/recordings/${selectedRecording.id}`}
+                    url={selectedRecording.id ? `/api/recordings/${selectedRecording.id}` : ''}
                     width="100%"
                     height="100%"
                     playing={isPlaying}
@@ -175,6 +215,13 @@ export default function PlaylistPage() {
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
+                    config={{
+                      file: {
+                        attributes: {
+                          crossOrigin: 'anonymous'
+                        }
+                      }
+                    }}
                   />
                 </div>
               ) : (
@@ -201,7 +248,7 @@ export default function PlaylistPage() {
                         </span>
                         <span className="flex items-center space-x-1">
                           <ClockIcon className="w-4 h-4" />
-                          <span>{videoRecorder.formatDuration(selectedRecording.duration)}</span>
+                          <span>{VideoRecorderService.formatDuration(selectedRecording.duration)}</span>
                         </span>
                         <span className="flex items-center space-x-1">
                           <CalendarIcon className="w-4 h-4" />
@@ -230,7 +277,7 @@ export default function PlaylistPage() {
                   <div className="grid grid-cols-4 gap-4 text-center">
                     <div className="bg-slate-800/50 rounded-lg p-3">
                       <div className="text-lg font-bold text-white">
-                        {videoRecorder.formatFileSize(selectedRecording.fileSize)}
+                        {VideoRecorderService.formatFileSize(selectedRecording.fileSize)}
                       </div>
                       <div className="text-xs text-slate-400">File Size</div>
                     </div>
@@ -346,7 +393,7 @@ export default function PlaylistPage() {
                               by {recording.hostName}
                             </p>
                             <div className="flex items-center space-x-2 mt-1 text-xs text-slate-500">
-                              <span>{videoRecorder.formatDuration(recording.duration)}</span>
+                              <span>{VideoRecorderService.formatDuration(recording.duration)}</span>
                               <span>•</span>
                               <span>{formatDate(recording.createdAt)}</span>
                             </div>
@@ -377,7 +424,7 @@ export default function PlaylistPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Total Duration</span>
                   <span className="font-bold text-white">
-                    {videoRecorder.formatDuration(
+                    {VideoRecorderService.formatDuration(
                       recordings.reduce((sum, r) => sum + r.duration, 0)
                     )}
                   </span>
@@ -385,7 +432,7 @@ export default function PlaylistPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-slate-400">Total Size</span>
                   <span className="font-bold text-white">
-                    {videoRecorder.formatFileSize(
+                    {VideoRecorderService.formatFileSize(
                       recordings.reduce((sum, r) => sum + r.fileSize, 0)
                     )}
                   </span>

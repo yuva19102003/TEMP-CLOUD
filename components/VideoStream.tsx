@@ -67,9 +67,36 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
   // Update PiP video when local stream changes
   useEffect(() => {
     if (pipVideoRef.current && localStream && isScreenSharing) {
+      console.log('📱 Updating PiP video with camera stream')
       pipVideoRef.current.srcObject = localStream
+      pipVideoRef.current.play().catch(e => {
+        console.log('PiP video autoplay prevented (normal):', e)
+      })
     }
   }, [localStream, isScreenSharing])
+
+  // Update main video when screen sharing changes
+  useEffect(() => {
+    if (localVideoRef.current) {
+      if (isScreenSharing && screenStream) {
+        // Show screen in main video when screen sharing
+        console.log('🎯 Updating main video with screen stream')
+        localVideoRef.current.srcObject = screenStream
+        localVideoRef.current.load() // Force reload
+        localVideoRef.current.play().catch(e => {
+          console.log('Screen video autoplay prevented (normal):', e)
+        })
+      } else if (localStream) {
+        // Show camera in main video when not screen sharing
+        console.log('📹 Updating main video with camera stream')
+        localVideoRef.current.srcObject = localStream
+        localVideoRef.current.load() // Force reload
+        localVideoRef.current.play().catch(e => {
+          console.log('Camera video autoplay prevented (normal):', e)
+        })
+      }
+    }
+  }, [isScreenSharing, screenStream, localStream])
 
   const setupWebSocket = () => {
     try {
@@ -184,6 +211,8 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
 
   const startScreenShare = async () => {
     try {
+      console.log('🖥️ Starting screen share...')
+      
       const screenShareStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           width: { ideal: 1920 },
@@ -197,35 +226,38 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
         }
       })
 
+      console.log('✅ Screen share stream obtained:', screenShareStream)
+      console.log('📹 Video tracks:', screenShareStream.getVideoTracks())
+
       // Handle screen share ending (user clicks "Stop sharing" in browser)
       screenShareStream.getVideoTracks()[0].addEventListener('ended', () => {
+        console.log('🛑 Screen share ended by user')
         stopScreenShare()
       })
 
       setScreenStream(screenShareStream)
-      
-      // Show screen in main video
-      if (screenVideoRef.current) {
-        screenVideoRef.current.srcObject = screenShareStream
-      }
-      
       setIsScreenSharing(true)
-      setStreamType('screen')
       setError('') // Clear any camera errors since screen sharing works
       setIsConnected(true) // Mark as connected since we have a stream
       
+      // The useEffect will handle updating the video element
+      
       // Only show PiP if we have camera stream
       if (localStream) {
+        console.log('📱 Setting up PiP with camera stream')
         setShowPiP(true)
         setStreamType('both')
         // Create combined stream for recording
         createCombinedStream(localStream, screenShareStream)
+      } else {
+        setStreamType('screen')
       }
       
       toast.success('🖥️ Screen sharing started')
+      console.log('✅ Screen sharing setup complete')
       
     } catch (err: any) {
-      console.error('Error starting screen share:', err)
+      console.error('❌ Error starting screen share:', err)
       
       let errorMessage = 'Failed to start screen sharing.'
       
@@ -249,8 +281,14 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
     
     setIsScreenSharing(false)
     setShowPiP(false)
-    setStreamType('camera')
+    setStreamType(localStream ? 'camera' : 'camera')
     setCombinedStream(null)
+    
+    // Switch main video back to camera if available
+    if (localStream && localVideoRef.current) {
+      localVideoRef.current.srcObject = localStream
+      console.log('Switched main video back to camera')
+    }
     
     toast('📹 Screen sharing stopped')
   }
@@ -644,34 +682,34 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
       {/* Video Container */}
       <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video border border-violet-500/20">
         {/* Main Video Display */}
-        {isScreenSharing ? (
-          // Screen sharing mode - show screen as main video
-          <video
-            ref={screenVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : localStream ? (
-          // Camera only mode (if available)
-          <video
-            ref={localVideoRef}
-            autoPlay
-            muted
-            playsInline
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          // No video available - show placeholder
-          <div className="w-full h-full bg-slate-800 flex items-center justify-center">
-            <div className="text-center text-slate-400">
-              <VideoCameraSlashIcon className="w-16 h-16 mx-auto mb-4" />
-              <p className="text-lg">No video source</p>
-              <p className="text-sm">Use screen sharing or enable camera</p>
-            </div>
-          </div>
-        )}
+        <video
+          ref={localVideoRef}
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ display: 'block' }}
+          onLoadedMetadata={() => {
+            console.log('📺 Video metadata loaded, attempting to play')
+            if (localVideoRef.current) {
+              localVideoRef.current.play().catch(e => {
+                console.log('Video autoplay prevented (normal behavior):', e)
+              })
+            }
+          }}
+          onError={(e) => {
+            console.error('❌ Video element error:', e)
+          }}
+        />
+
+        {/* Hidden screen video ref for separate handling if needed */}
+        <video
+          ref={screenVideoRef}
+          autoPlay
+          muted
+          playsInline
+          className="hidden"
+        />
 
         {/* Picture-in-Picture Camera (when screen sharing and camera available) */}
         {isScreenSharing && showPiP && localStream && (
@@ -682,14 +720,25 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
               muted
               playsInline
               className="w-full h-full object-cover"
+              onLoadedMetadata={() => {
+                console.log('📱 PiP video metadata loaded')
+                if (pipVideoRef.current) {
+                  pipVideoRef.current.play().catch(e => {
+                    console.log('PiP video autoplay prevented (normal):', e)
+                  })
+                }
+              }}
             />
             <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
               Camera
             </div>
+            <div className="absolute top-2 right-2 bg-violet-600/80 text-white text-xs px-2 py-1 rounded">
+              PiP
+            </div>
           </div>
         )}
         
-        {/* Video Overlay */}
+        {/* Video Overlay for disabled states */}
         {!isVideoEnabled && (isScreenSharing || localStream) && (
           <div className="absolute inset-0 bg-slate-800/80 flex items-center justify-center">
             <div className="text-center text-white">
@@ -701,6 +750,17 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
               <p className="text-lg">
                 {isScreenSharing ? 'Screen sharing paused' : 'Camera is off'}
               </p>
+            </div>
+          </div>
+        )}
+
+        {/* No Video Source Placeholder */}
+        {!localStream && !screenStream && !isScreenSharing && (
+          <div className="absolute inset-0 bg-slate-800 flex items-center justify-center">
+            <div className="text-center text-slate-400">
+              <VideoCameraSlashIcon className="w-16 h-16 mx-auto mb-4" />
+              <p className="text-lg">No video source</p>
+              <p className="text-sm">Use screen sharing or enable camera</p>
             </div>
           </div>
         )}
@@ -796,7 +856,7 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
                 ) : isScreenSharing ? (
                   <>
                     <ComputerDesktopIcon className="w-4 h-4" />
-                    <span>Screen sharing</span>
+                    <span>Screen sharing active</span>
                   </>
                 ) : localStream ? (
                   <>
@@ -811,6 +871,34 @@ export default function VideoStream({ isHost, roomId, userName, onLeave }: Video
                 )}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Screen Share Active Indicator */}
+        {isScreenSharing && (
+          <div className="absolute top-4 right-4">
+            <motion.div
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 border border-blue-400"
+            >
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span>Screen Sharing</span>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Debug Info (only in development) */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute bottom-4 left-4 bg-black/70 text-white text-xs p-2 rounded font-mono max-w-xs">
+            <div>Camera: {localStream ? '✅' : '❌'}</div>
+            <div>Screen: {screenStream ? '✅' : '❌'}</div>
+            <div>Sharing: {isScreenSharing ? '✅' : '❌'}</div>
+            <div>Type: {streamType}</div>
+            <div>Video Enabled: {isVideoEnabled ? '✅' : '❌'}</div>
+            <div>Main Video Source: {localVideoRef.current?.srcObject ? 'Set' : 'None'}</div>
+            <div>PiP Video Source: {pipVideoRef.current?.srcObject ? 'Set' : 'None'}</div>
+            <div>Show PiP: {showPiP ? '✅' : '❌'}</div>
           </div>
         )}
 
