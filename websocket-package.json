@@ -1,0 +1,19 @@
+{
+  "name": "tempcloud-websocket-server",
+  "version": "1.0.0",
+  "description": "WebSocket server for TempCloud real-time streaming",
+  "main": "websocket-server.js",
+  "scripts": {
+    "start": "node websocket-server.js",
+    "dev": "nodemon websocket-server.js"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["websocket", "streaming", "realtime", "chat"],
+  "author": "TempCloud",
+  "license": "MIT"
+}

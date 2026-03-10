@@ -2,91 +2,249 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dark Violet Theme */
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --primary-light: #818cf8;
-  --secondary: #f1f5f9;
-  --accent: #10b981;
-  --background: #ffffff;
-  --surface: #f8fafc;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --border: #e2e8f0;
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-}
-
-* {
-  box-sizing: border-box;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #1a1a2e;
+  --bg-tertiary: #16213e;
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #a855f7;
+  --accent-tertiary: #c084fc;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border-primary: rgba(139, 92, 246, 0.2);
+  --border-secondary: rgba(255, 255, 255, 0.1);
 }
 
 body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
+/* Custom Gradient Background */
+.gradient-bg {
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+}
+
+.gradient-bg-alt {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c084fc 100%);
+}
+
+/* Glass Morphism Effect */
+.glass-effect {
+  background: rgba(26, 26, 46, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-secondary);
+}
+
+.glass-card {
+  background: rgba(26, 26, 46, 0.6);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--border-primary);
+}
+
+/* Card Styles */
+.card {
+  @apply bg-slate-900/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-violet-500/20;
+}
+
+.card-dark {
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.9), rgba(22, 33, 62, 0.9));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.card-header {
+  @apply px-8 py-6 border-b border-violet-500/20;
+}
+
+.card-body {
+  @apply px-8 py-6;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-violet-500/25;
+}
+
+.btn-secondary {
+  @apply bg-slate-800/80 hover:bg-slate-700/80 text-violet-200 font-medium py-2 px-4 rounded-lg transition-all duration-200 backdrop-blur-sm border border-violet-500/30 hover:border-violet-400/50;
+}
+
+.btn-ghost {
+  @apply bg-transparent hover:bg-violet-500/10 text-violet-300 hover:text-violet-200 font-medium py-2 px-4 rounded-lg transition-all duration-200 border border-violet-500/20 hover:border-violet-400/40;
+}
+
+/* Input Styles */
+.input-field {
+  @apply w-full px-4 py-3 bg-slate-800/50 border border-violet-500/30 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-400 transition-all duration-200 text-white placeholder-slate-400;
+}
+
+/* Feature Card */
+.feature-card {
+  @apply bg-slate-900/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-violet-500/20 transition-all duration-300 border border-violet-500/20 hover:border-violet-400/40;
+}
+
+/* Upload Area */
+.upload-area {
+  @apply border-2 border-dashed border-violet-400/50 rounded-2xl p-12 text-center hover:border-violet-400/70 transition-colors duration-200 bg-violet-500/5;
+}
+
+.upload-area.drag-active {
+  @apply border-violet-400 bg-violet-500/10;
+}
+
+/* Progress Bar */
+.progress-bar {
+  @apply w-full bg-slate-700 rounded-full h-2 overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-300 ease-out;
+}
+
+/* Live Stream Styles */
+.stream-card {
+  background: linear-gradient(145deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.live-indicator {
+  @apply bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse;
+}
+
+.viewer-count {
+  @apply bg-slate-800/80 text-violet-200 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.6); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-animate {
+  background: linear-gradient(-45deg, #8b5cf6, #a855f7, #c084fc, #d946ef);
+  background-size: 400% 400%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* File Preview Styles */
+.file-preview {
+  @apply bg-slate-800/50 rounded-xl p-4 border border-violet-500/20 hover:border-violet-400/40 transition-colors;
+}
+
+/* Code Block Styles */
+.code-block {
+  @apply bg-slate-900 text-slate-100 p-4 rounded-lg font-mono text-sm overflow-x-auto border border-violet-500/20;
+}
+
+/* Chat Styles */
+.chat-container {
+  background: linear-gradient(145deg, rgba(15, 15, 25, 0.95), rgba(26, 26, 46, 0.95));
+  backdrop-filter: blur(20px);
+}
+
+.chat-message {
+  @apply bg-slate-800/60 rounded-lg p-3 border border-violet-500/10;
+}
+
+.chat-message.own {
+  @apply bg-violet-600/20 border-violet-400/30;
+}
+
+/* Video Controls */
+.video-controls {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.control-btn {
+  @apply p-3 rounded-full transition-all duration-200 border border-violet-500/30;
+}
+
+.control-btn.active {
+  @apply bg-violet-600 border-violet-500;
+}
+
+.control-btn.inactive {
+  @apply bg-red-600 border-red-500;
+}
+
+.control-btn.neutral {
+  @apply bg-slate-700 hover:bg-slate-600 border-slate-600;
+}
+
+/* Playlist Styles */
+.playlist-item {
+  @apply bg-slate-800/60 hover:bg-slate-700/60 rounded-xl p-4 border border-violet-500/20 hover:border-violet-400/40 transition-all duration-200 cursor-pointer;
+}
+
+.playlist-item.playing {
+  @apply bg-violet-600/20 border-violet-400/50;
+}
+
+/* Status Indicators */
+.status-online {
+  @apply bg-green-500 text-white;
+}
+
+.status-offline {
+  @apply bg-slate-600 text-slate-300;
+}
+
+.status-recording {
+  @apply bg-red-500 text-white animate-pulse;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .card-header, .card-body {
+    @apply px-4 py-4;
   }
   
-  .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-900 font-semibold py-3 px-6 rounded-xl border border-gray-200 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
-  }
-  
-  .btn-success {
-    @apply bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
-  }
-  
-  .input-field {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all duration-200;
-  }
-  
-  .card {
-    @apply bg-white rounded-2xl shadow-xl border border-gray-100 backdrop-blur-sm;
-  }
-  
-  .card-header {
-    @apply p-6 border-b border-gray-100;
-  }
-  
-  .card-body {
+  .upload-area {
     @apply p-6;
   }
-  
-  .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-  
-  .glass-effect {
-    @apply bg-white/80 backdrop-blur-md border border-white/20;
-  }
-  
-  .upload-zone {
-    @apply border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 bg-indigo-50/50 hover:bg-indigo-100/50 hover:border-indigo-400;
-  }
-  
-  .upload-zone.active {
-    @apply border-indigo-500 bg-indigo-100/70 scale-105;
-  }
-  
-  .progress-bar {
-    @apply w-full bg-gray-200 rounded-full h-3 overflow-hidden;
-  }
-  
-  .progress-fill {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500 ease-out;
-  }
-  
-  .code-display {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-mono text-3xl font-bold tracking-wider px-6 py-4 rounded-xl shadow-lg;
-  }
-  
-  .feature-card {
-    @apply bg-white/90 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1;
-  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(26, 26, 46, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
 }

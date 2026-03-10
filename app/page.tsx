@@ -205,7 +205,7 @@ export default function HomePage() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-3"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl flex items-center justify-center">
                 <CloudArrowUpIcon className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold text-white">TempCloud</h1>
@@ -215,6 +215,18 @@ export default function HomePage() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center space-x-4"
             >
+              <button
+                onClick={() => router.push('/stream')}
+                className="text-white/80 hover:text-white transition-colors text-sm font-medium"
+              >
+                Live Stream
+              </button>
+              <button
+                onClick={() => router.push('/playlist')}
+                className="text-white/80 hover:text-white transition-colors text-sm font-medium"
+              >
+                Playlist
+              </button>
               <button
                 onClick={() => router.push('/analytics')}
                 className="text-white/80 hover:text-white transition-colors text-sm font-medium"
